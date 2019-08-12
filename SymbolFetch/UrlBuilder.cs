@@ -1,11 +1,5 @@
 ﻿using SymbolFetch.Helpers;
-using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Security.Cryptography;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace SymbolFetch
 {
@@ -14,7 +8,6 @@ namespace SymbolFetch
         public string BuildUrl(string filename)
         {
             string downloadURL = string.Empty;
-            string SymbolServerUrl;
 
             if (File.Exists(filename))
             {
@@ -37,12 +30,7 @@ namespace SymbolFetch
                     else
                         pdbName = reader.pdbName;
 
-                    SymbolServerUrl = ConfigurationReader.SymbolServerUrl;
-
-                    if (string.IsNullOrEmpty(SymbolServerUrl))
-                        downloadURL = "http://msdl.microsoft.com/download/symbols/" + pdbName + "/" + reader.debugGUID.ToString("N").ToUpper() + reader.pdbage + "/" + pdbName;
-                    else
-                        downloadURL = SymbolServerUrl + "/" + pdbName + "/" + reader.debugGUID.ToString("N").ToUpper() + reader.pdbage + "/" + pdbName;
+                    downloadURL = "http://msdl.microsoft.com/download/symbols/" + pdbName + "/" + reader.debugGUID.ToString("N").ToUpper() + reader.pdbage + "/" + pdbName;
                 }
             }
             return downloadURL;

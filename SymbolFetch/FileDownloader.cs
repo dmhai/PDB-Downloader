@@ -2,10 +2,8 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Configuration;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.Net;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -13,7 +11,7 @@ using System.Text.RegularExpressions;
 namespace SymbolFetch
 {
     #region FileDownloader
-    class ResourceDownloader : System.Object, IDisposable
+    class ResourceDownloader : object, IDisposable
     {
 
         #region Nested Types
@@ -24,7 +22,7 @@ namespace SymbolFetch
             public string PdbGuid;
             public bool IsCompressed;
 
-            public FileInfo(String path)
+            public FileInfo(string path)
             {
                 this.Path = path;
                 this.Name = this.Path.Split("/"[0])[this.Path.Split("/"[0]).Length - 1];
@@ -100,30 +98,30 @@ namespace SymbolFetch
         #endregion
 
         #region Fields
-        private const Int32 default_decimals = 2;
+        private const int default_decimals = 2;
 
         // Delegates
         public delegate void FailEventHandler(object sender, Exception ex);
-        public delegate void CalculatingFileSizeEventHandler(object sender, Int32 fileNr);
+        public delegate void CalculatingFileSizeEventHandler(object sender, int fileNr);
 
         // The download worker
         private BackgroundWorker bgwDownloader = new BackgroundWorker();
 
         // Preferences
-        private Boolean m_supportsProgress, m_deleteCompletedFiles;
-        private Int32 m_packageSize, m_stopWatchCycles;
+        private bool m_supportsProgress, m_deleteCompletedFiles;
+        private int m_packageSize, m_stopWatchCycles;
         public string DownloadLocation;
 
         // State
-        private Boolean m_disposed = false;
-        private Boolean m_busy, m_paused, m_canceled;
-        private Int64 m_currentFileProgress, m_totalProgress, m_currentFileSize;
-        private Int32 m_currentSpeed, m_fileNr;
+        private bool m_disposed = false;
+        private bool m_busy, m_paused, m_canceled;
+        private long m_currentFileProgress, m_totalProgress, m_currentFileSize;
+        private int m_currentSpeed, m_fileNr;
 
         // Data
-        private String m_localDirectory;
+        private string m_localDirectory;
         private List<FileInfo> m_files = new List<FileInfo>();
-        private Int64 m_totalSize;
+        private long m_totalSize;
 
         #endregion
 
@@ -133,12 +131,12 @@ namespace SymbolFetch
             this.initizalize(false);
         }
 
-        public ResourceDownloader(Boolean supportsProgress)
+        public ResourceDownloader(bool supportsProgress)
         {
             this.initizalize(supportsProgress);
         }
 
-        private void initizalize(Boolean supportsProgress)
+        private void initizalize(bool supportsProgress)
         {
             // Set the bgw properties
             bgwDownloader.WorkerReportsProgress = true;
@@ -164,7 +162,7 @@ namespace SymbolFetch
         public void Resume() { this.IsPaused = false; }
 
         public void Stop() { this.IsBusy = false; }
-        public void Stop(Boolean deleteCompletedFiles)
+        public void Stop(bool deleteCompletedFiles)
         {
             this.DeleteCompletedFilesAfterCancel = deleteCompletedFiles;
             this.Stop();
@@ -182,16 +180,16 @@ namespace SymbolFetch
         }
 
         #region Size formatting functions
-        public static string FormatSizeBinary(Int64 size)
+        public static string FormatSizeBinary(long size)
         {
             return ResourceDownloader.FormatSizeBinary(size, default_decimals);
         }
         
-        public static string FormatSizeBinary(Int64 size, Int32 decimals)
+        public static string FormatSizeBinary(long size, int decimals)
         {
-            String[] sizes = { "B", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB" };
-            Double formattedSize = size;
-            Int32 sizeIndex = 0;
+            string[] sizes = { "B", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB" };
+            double formattedSize = size;
+            int sizeIndex = 0;
             while (formattedSize >= 1024 && sizeIndex < sizes.Length)
             {
                 formattedSize /= 1024;
@@ -200,16 +198,16 @@ namespace SymbolFetch
             return Math.Round(formattedSize, decimals) + sizes[sizeIndex];
         }
 
-        public static string FormatSizeDecimal(Int64 size)
+        public static string FormatSizeDecimal(long size)
         {
             return ResourceDownloader.FormatSizeDecimal(size, default_decimals);
         }
 
-        public static string FormatSizeDecimal(Int64 size, Int32 decimals)
+        public static string FormatSizeDecimal(long size, int decimals)
         {
-            String[] sizes = { "B", "kB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB" };
-            Double formattedSize = size;
-            Int32 sizeIndex = 0;
+            string[] sizes = { "B", "kB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB" };
+            double formattedSize = size;
+            int sizeIndex = 0;
             while (formattedSize >= 1000 && sizeIndex < sizes.Length)
             {
                 formattedSize /= 1000;
@@ -222,7 +220,7 @@ namespace SymbolFetch
         #endregion
 
         #region Protected methods
-        protected virtual void Dispose(Boolean disposing)
+        protected virtual void Dispose(bool disposing)
         {
             if (!m_disposed)
             {
@@ -238,7 +236,7 @@ namespace SymbolFetch
         #region Private methods
         private void bgwDownloader_DoWork(object sender, DoWorkEventArgs e)
         {
-            Int32 fileNr = 0;
+            int fileNr = 0;
 
             if (this.SupportsProgress) { calculateFilesSize(); }
 
@@ -267,9 +265,9 @@ namespace SymbolFetch
             bool headVerb = true;
             m_totalSize = 0;
             string message;
-            for (Int32 fileNr = 0; fileNr < this.Files.Count; fileNr++)
+            for (int fileNr = 0; fileNr < this.Files.Count; fileNr++)
             {
-                bgwDownloader.ReportProgress((Int32)InvokeType.CalculatingFileNrRaiser, fileNr + 1);
+                bgwDownloader.ReportProgress((int)InvokeType.CalculatingFileNrRaiser, fileNr + 1);
                 try
                 {
                     //Probe 1
@@ -339,7 +337,7 @@ namespace SymbolFetch
             Stream receiveStream = webResp.GetResponseStream();
             Encoding encode = System.Text.Encoding.GetEncoding("utf-8");
             StreamReader readStream = new StreamReader(receiveStream, encode);
-            Char[] read = new Char[webResp.ContentLength];
+            char[] read = new char[webResp.ContentLength];
             readStream.Read(read, 0, (int)webResp.ContentLength);
 
             string file = new string(read, 0, (int)webResp.ContentLength);
@@ -398,7 +396,7 @@ namespace SymbolFetch
             bgwDownloader.ReportProgress((int)InvokeType.EventRaiser, eventName);
         }
 
-        private void downloadFile(Int32 fileNr)
+        private void downloadFile(int fileNr)
         {
             bool headVerb = false;
             m_currentFileSize = 0;
@@ -406,13 +404,13 @@ namespace SymbolFetch
             fireEventFromBgw(Event.FileDownloadAttempting);
 
             FileInfo file = this.Files[fileNr];
-            
-            Int64 size = 0;
 
-            Byte[] readBytes = new Byte[this.PackageSize];
-            Int32 currentPackageSize;
+            long size = 0;
+
+            byte[] readBytes = new byte[this.PackageSize];
+            int currentPackageSize;
             System.Diagnostics.Stopwatch speedTimer = new System.Diagnostics.Stopwatch();
-            Int32 readings = 0;
+            int readings = 0;
             Exception exc = null;
 
             FileStream writer;
@@ -497,7 +495,7 @@ namespace SymbolFetch
 
                             if (readings >= this.StopWatchCyclesAmount)
                             {
-                                m_currentSpeed = (Int32)(this.PackageSize * StopWatchCyclesAmount * 1000 / (speedTimer.ElapsedMilliseconds + 1));
+                                m_currentSpeed = (int)(this.PackageSize * StopWatchCyclesAmount * 1000 / (speedTimer.ElapsedMilliseconds + 1));
                                 speedTimer.Reset();
                                 readings = 0;
                             }
@@ -523,7 +521,7 @@ namespace SymbolFetch
 
                     if (exc != null)
                     {
-                        bgwDownloader.ReportProgress((Int32)InvokeType.FileDownloadFailedRaiser, exc);
+                        bgwDownloader.ReportProgress((int)InvokeType.FileDownloadFailedRaiser, exc);
                     }
                     else
                     {
@@ -545,7 +543,7 @@ namespace SymbolFetch
 
                             if (readings >= this.StopWatchCyclesAmount)
                             {
-                                m_currentSpeed = (Int32)(this.PackageSize * StopWatchCyclesAmount * 1000 / (speedTimer.ElapsedMilliseconds + 1));
+                                m_currentSpeed = (int)(this.PackageSize * StopWatchCyclesAmount * 1000 / (speedTimer.ElapsedMilliseconds + 1));
                                 speedTimer.Reset();
                                 readings = 0;
                             }
@@ -569,20 +567,10 @@ namespace SymbolFetch
 
         public static void WriteToLog(string fileName, Exception exc)
         {
-            using (FileStream fs = new FileStream("Log.txt", FileMode.Append))
-            using (StreamWriter sr = new StreamWriter(fs))
-            {
-                sr.WriteLine(DateTime.Now.ToString() + "   " + fileName + " - " + exc.Message);
-            }
         }
 
         public static void WriteToLog(string fileName, string text)
         {
-            using (FileStream fs = new FileStream("Log.txt", FileMode.Append))
-            using (StreamWriter sr = new StreamWriter(fs))
-            {
-                sr.WriteLine(DateTime.Now.ToString() + "   " + fileName + " - " + text);
-            }
         }
 
 
@@ -621,13 +609,13 @@ namespace SymbolFetch
             }
         }
 
-        private void cleanUpFiles(Int32 start, Int32 length)
+        private void cleanUpFiles(int start, int length)
         {
-            Int32 last = length < 0 ? this.Files.Count - 1 : start + length - 1;
+            int last = length < 0 ? this.Files.Count - 1 : start + length - 1;
 
-            for (Int32 fileNr = start; fileNr <= last; fileNr++)
+            for (int fileNr = start; fileNr <= last; fileNr++)
             {
-                String fullPath = this.LocalDirectory + "\\" + this.Files[fileNr].Name;
+                string fullPath = this.LocalDirectory + "\\" + this.Files[fileNr].Name;
                 if (System.IO.File.Exists(fullPath)) { System.IO.File.Delete(fullPath); }
             }
         }
@@ -689,7 +677,7 @@ namespace SymbolFetch
                     if (FileDownloadFailed != null) { this.FileDownloadFailed(this, (Exception)e.UserState); }
                     break;
                 case InvokeType.CalculatingFileNrRaiser:
-                    if (CalculatingFileSize != null) { this.CalculatingFileSize(this, (Int32)e.UserState); }
+                    if (CalculatingFileSize != null) { this.CalculatingFileSize(this, (int)e.UserState); }
                     break;
             }
         }
@@ -714,7 +702,7 @@ namespace SymbolFetch
 
         public Dictionary<string,string> FailedFiles = new Dictionary<string, string>();
 
-        public String LocalDirectory
+        public string LocalDirectory
         {
             get { return m_localDirectory; }
             set
@@ -723,7 +711,7 @@ namespace SymbolFetch
             }
         }
 
-        public Boolean SupportsProgress
+        public bool SupportsProgress
         {
             get { return m_supportsProgress; }
             set
@@ -739,13 +727,13 @@ namespace SymbolFetch
             }
         }
 
-        public Boolean DeleteCompletedFilesAfterCancel
+        public bool DeleteCompletedFilesAfterCancel
         {
             get { return m_deleteCompletedFiles; }
             set { m_deleteCompletedFiles = value; }
         }
 
-        public Int32 PackageSize
+        public int PackageSize
         {
             get { return m_packageSize; }
             set
@@ -761,7 +749,7 @@ namespace SymbolFetch
             }
         }
 
-        public Int32 StopWatchCyclesAmount
+        public int StopWatchCyclesAmount
         {
             get { return m_stopWatchCycles; }
             set
@@ -777,7 +765,7 @@ namespace SymbolFetch
             }
         }
 
-        public Boolean IsBusy
+        public bool IsBusy
         {
             get { return m_busy; }
             set
@@ -806,7 +794,7 @@ namespace SymbolFetch
             }
         }
 
-        public Boolean IsPaused
+        public bool IsPaused
         {
             get { return m_paused; }
             set
@@ -835,27 +823,27 @@ namespace SymbolFetch
             }
         }
 
-        public Boolean CanStart
+        public bool CanStart
         {
             get { return !this.IsBusy; }
         }
 
-        public Boolean CanPause
+        public bool CanPause
         {
             get { return this.IsBusy && !this.IsPaused && !bgwDownloader.CancellationPending; }
         }
 
-        public Boolean CanResume
+        public bool CanResume
         {
             get { return this.IsBusy && this.IsPaused && !bgwDownloader.CancellationPending; }
         }
 
-        public Boolean CanStop
+        public bool CanStop
         {
             get { return this.IsBusy && !bgwDownloader.CancellationPending; }
         }
 
-        public Int64 TotalSize
+        public long TotalSize
         {
             get
             {
@@ -870,26 +858,26 @@ namespace SymbolFetch
             }
         }
 
-        public Int64 TotalProgress
+        public long TotalProgress
         {
             get { return m_totalProgress; }
         }
 
-        public Int64 CurrentFileProgress
+        public long CurrentFileProgress
         {
             get { return m_currentFileProgress; }
         }
 
-        public Double TotalPercentage()
+        public double TotalPercentage()
         {
             return this.TotalPercentage(default_decimals);
         }
 
-        public Double TotalPercentage(Int32 decimals)
+        public double TotalPercentage(int decimals)
         {
             if (this.SupportsProgress)
             {
-                return Math.Round((Double)this.TotalProgress / this.TotalSize * 100, decimals);
+                return Math.Round((double)this.TotalProgress / this.TotalSize * 100, decimals);
             }
             else
             {
@@ -897,17 +885,17 @@ namespace SymbolFetch
             }
         }
 
-        public Double CurrentFilePercentage()
+        public double CurrentFilePercentage()
         {
             return this.CurrentFilePercentage(default_decimals);
         }
 
-        public Double CurrentFilePercentage(Int32 decimals)
+        public double CurrentFilePercentage(int decimals)
         {
-            return Math.Round((Double)this.CurrentFileProgress / this.CurrentFileSize * 100, decimals);
+            return Math.Round((double)this.CurrentFileProgress / this.CurrentFileSize * 100, decimals);
         }
 
-        public Int32 DownloadSpeed
+        public int DownloadSpeed
         {
             get { return m_currentSpeed; }
         }
@@ -917,12 +905,12 @@ namespace SymbolFetch
             get { return this.Files[m_fileNr]; }
         }
 
-        public Int64 CurrentFileSize
+        public long CurrentFileSize
         {
             get { return m_currentFileSize; }
         }
 
-        public Boolean HasBeenCanceled
+        public bool HasBeenCanceled
         {
             get { return m_canceled; }
         }

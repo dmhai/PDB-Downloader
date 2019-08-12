@@ -1,6 +1,4 @@
-﻿using System.Configuration;
-
-namespace SymbolFetch.Helpers
+﻿namespace SymbolFetch.Helpers
 {
     public static class Constants
     {
@@ -19,20 +17,6 @@ namespace SymbolFetch.Helpers
             EnableBulkDownload = false;
         }
 
-        #endregion
-    }
-
-    public static class ConfigurationReader
-    {
-        #region Settings
-        public static string SymbolServerUrl;
-        #endregion
-
-        #region Ctor
-        static ConfigurationReader()
-        {
-            SymbolServerUrl = ConfigurationManager.AppSettings["SymbolServer"];
-        }
         #endregion
     }
 }

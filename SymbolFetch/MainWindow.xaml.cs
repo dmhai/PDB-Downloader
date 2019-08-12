@@ -19,15 +19,20 @@ namespace SymbolFetch
         #endregion
 
         #region C'Tor
-        public MainWindow()
+        public MainWindow(string downloadLocation, string[] files)
         {
             InitializeComponent();
 
             WireupCommandBindings();
             WireupDownloaderEvents();
+            downloader.DownloadLocation = downloadLocation;
             SetDownloadLocation();
+            lstFiles.Visibility = Visibility.Visible;
+            lstFiles.ItemsSource = files;
             btnBug.Content = "Feedback/Bug";
             btnBulk.Visibility = Helpers.Constants.EnableBulkDownload ? Visibility.Visible : Visibility.Hidden;
+
+            btnStart_Click(this, new RoutedEventArgs());
         }
 
         #endregion
@@ -148,7 +153,7 @@ namespace SymbolFetch
             {
                 Process.Start("mailto:rajrang@microsoft.com;puluthra@microsoft.com;nanram@microsoft.com?subject=PDB Downloader ");
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 //TODO: eat it for now
             }
@@ -209,9 +214,9 @@ namespace SymbolFetch
         }
 
 
-        private void downloader_CalculationFileSize(object sender, Int32 fileNr)
+        private void downloader_CalculationFileSize(object sender, int fileNr)
         {
-            lblStatus.Content = String.Format("Initializing - file {0} of {1}", fileNr, downloader.Files.Count);
+            lblStatus.Content = string.Format("Initializing - file {0} of {1}", fileNr, downloader.Files.Count);
         }
 
         private void downloader_ProgressChanged(object sender, EventArgs e)
@@ -219,34 +224,34 @@ namespace SymbolFetch
             try
             {
                 pBarFileProgress.Value = downloader.CurrentFilePercentage();
-                lblFileProgress.Content = String.Format("Downloaded {0} of {1} ({2}%)", ResourceDownloader.FormatSizeBinary(downloader.CurrentFileProgress), ResourceDownloader.FormatSizeBinary(downloader.CurrentFileSize), downloader.CurrentFilePercentage()) + String.Format(" - {0}/s", ResourceDownloader.FormatSizeBinary(downloader.DownloadSpeed));
+                lblFileProgress.Content = string.Format("Downloaded {0} of {1} ({2}%)", ResourceDownloader.FormatSizeBinary(downloader.CurrentFileProgress), ResourceDownloader.FormatSizeBinary(downloader.CurrentFileSize), downloader.CurrentFilePercentage()) + string.Format(" - {0}/s", ResourceDownloader.FormatSizeBinary(downloader.DownloadSpeed));
 
                 if (downloader.SupportsProgress)
                 {
                     pBarTotalProgress.Value = downloader.TotalPercentage();
-                    lblTotalProgress.Content = String.Format("Downloaded {0} of {1} ({2}%)", ResourceDownloader.FormatSizeBinary(downloader.TotalProgress), ResourceDownloader.FormatSizeBinary(downloader.TotalSize), downloader.TotalPercentage());
+                    lblTotalProgress.Content = string.Format("Downloaded {0} of {1} ({2}%)", ResourceDownloader.FormatSizeBinary(downloader.TotalProgress), ResourceDownloader.FormatSizeBinary(downloader.TotalSize), downloader.TotalPercentage());
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             { //eat it, not cool I know
             }
         }
 
         private void downloader_FileDownloadAttempting(object sender, EventArgs e)
         {
-            lblStatus.Content = String.Format("Preparing {0}", downloader.CurrentFile.Path);
+            lblStatus.Content = string.Format("Preparing {0}", downloader.CurrentFile.Path);
         }
 
         private void downloader_FileDownloadStarted(object sender, EventArgs e)
         {
-            lblStatus.Content = String.Format("Downloading {0}", downloader.CurrentFile.Path);
-            lblFileSize.Content = String.Format("File size: {0}", ResourceDownloader.FormatSizeBinary(downloader.CurrentFileSize));
+            lblStatus.Content = string.Format("Downloading {0}", downloader.CurrentFile.Path);
+            lblFileSize.Content = string.Format("File size: {0}", ResourceDownloader.FormatSizeBinary(downloader.CurrentFileSize));
             //lblSavingTo.Content = String.Format("Saving to {0}\\{1}", downloader.LocalDirectory, downloader.CurrentFile.Name);
         }
 
         private void downloader_Completed(object sender, EventArgs e)
         {
-            lblStatus.Content = String.Format("Download complete, downloaded {0} file(s).", downloader.Files.Count);
+            lblStatus.Content = string.Format("Download complete, downloaded {0} file(s).", downloader.Files.Count);
             if (downloader.Files.Count > 0 && pBarTotalProgress.Value > 0)
             {
                 pBarTotalProgress.Value = 100;
@@ -300,12 +305,12 @@ namespace SymbolFetch
 
         private void cbUseProgress_Checked(object sender, RoutedEventArgs e)
         {
-            downloader.SupportsProgress = (Boolean)cbUseProgress.IsChecked;
+            downloader.SupportsProgress = (bool)cbUseProgress.IsChecked;
         }
 
         private void cbDeleteCompletedFiles_Checked(object sender, RoutedEventArgs e)
         {
-            downloader.DeleteCompletedFilesAfterCancel = (Boolean)cbDeleteCompletedFiles.IsChecked;
+            downloader.DeleteCompletedFilesAfterCancel = (bool)cbDeleteCompletedFiles.IsChecked;
         }
 
         private void btnClose_Click(object sender, RoutedEventArgs e)
